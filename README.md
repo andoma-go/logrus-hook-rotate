@@ -25,7 +25,7 @@ log := &logrus.Logger{
 	Level: logrus.InfoLevel,
 }
 
-hook := rotatehook.New(&rotatehook.Config{
+hook := rotatehook.NewRotateHook(&rotatehook.Config{
 	Filename:   "debug.log",
 	MaxSize:    5,
 	MaxAge:     30,

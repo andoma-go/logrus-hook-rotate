@@ -25,8 +25,8 @@ type RotateHook struct {
 	cfg    *Config
 }
 
-func New(cfg *Config) logrus.Hook {
-	r := &RotateHook{
+func NewRotateHook(cfg *Config) *RotateHook {
+	h := &RotateHook{
 		cfg: cfg,
 		logger: &lumberjack.Logger{
 			Filename:   cfg.Filename,
@@ -38,39 +38,35 @@ func New(cfg *Config) logrus.Hook {
 		},
 	}
 
-	return r
+	return h
 }
 
-func (r *RotateHook) Levels() []logrus.Level {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return logrus.AllLevels[:r.cfg.Level+1]
+func (h *RotateHook) Levels() []logrus.Level {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	return logrus.AllLevels[:h.cfg.Level+1]
 }
 
-func (r *RotateHook) Fire(entry *logrus.Entry) (err error) {
-	r.mu.RLock()
-	enabled := r.cfg.Enabled
-	r.mu.RUnlock()
-
-	b, err := r.cfg.Formatter.Format(entry)
+func (h *RotateHook) Fire(entry *logrus.Entry) (err error) {
+	b, err := h.cfg.Formatter.Format(entry)
 	if err != nil {
 		return err
 	}
-	if enabled {
-		r.logger.Write(b)
+	if h.Enabled() {
+		h.logger.Write(b)
 	}
 
 	return nil
 }
 
-func (r *RotateHook) IsEnabled() bool {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.cfg.Enabled
+func (h *RotateHook) Enabled() bool {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	return h.cfg.Enabled
 }
 
-func (r *RotateHook) SetEnabled(enabled bool) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.cfg.Enabled = enabled
+func (h *RotateHook) SetEnabled(enabled bool) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.cfg.Enabled = enabled
 }
